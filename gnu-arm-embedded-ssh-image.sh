@@ -44,7 +44,7 @@ done
 CONTAINER=$(buildah from --arch "$ARCHITECTURE" quay.io/jwillikers/openssh-server:latest)
 IMAGE="gnu-arm-embedded-ssh"
 
-buildah run "$CONTAINER" /bin/sh -c 'microdnf install -y clang-tools-extra cmake arm-none-eabi-binutils-cs arm-none-eabi-gcc-cs arm-none-eabi-gcc-cs-c++ arm-none-eabi-newlib ninja-build python3 python3-pip python3-wheel python-unversioned-command --nodocs --setopt install_weak_deps=0'
+buildah run "$CONTAINER" /bin/sh -c 'microdnf install -y clang-tools-extra cmake arm-none-eabi-binutils-cs arm-none-eabi-gcc-cs arm-none-eabi-gcc-cs-c++ arm-none-eabi-newlib ninja-build python3 python3-pip python3-wheel python-unversioned-command tar --nodocs --setopt install_weak_deps=0'
 
 buildah run "$CONTAINER" /bin/sh -c 'microdnf clean all -y'
 
