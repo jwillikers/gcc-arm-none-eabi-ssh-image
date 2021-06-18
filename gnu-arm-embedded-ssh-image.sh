@@ -7,9 +7,9 @@ set -o errexit
 Help()
 {
    # Display Help
-   echo "Generate a container image for the GNU ARM embedded toolchain with Buildah."
+   echo "Generate a container image for the GNU Arm Embedded Toolchain with Buildah."
    echo
-   echo "Syntax: gcc-arm-none-eabi-ssh-image.sh [-a|h]"
+   echo "Syntax: gnu-arm-embedded-ssh-image.sh [-a|h]"
    echo "options:"
    echo "a     Build for the specified target architecture, i.e. amd64, armhfp, arm64."
    echo "h     Print this Help."
@@ -42,7 +42,7 @@ while getopts ":a:h" option; do
 done
 
 CONTAINER=$(buildah from --arch "$ARCHITECTURE" quay.io/jwillikers/openssh-server:latest)
-IMAGE="gcc-arm-none-eabi-ssh"
+IMAGE="gnu-arm-embedded-ssh"
 
 buildah run "$CONTAINER" /bin/sh -c 'microdnf install -y clang-tools-extra cmake arm-none-eabi-binutils-cs arm-none-eabi-gcc-cs arm-none-eabi-gcc-cs-c++ arm-none-eabi-newlib ninja-build python3 python3-pip python3-wheel python-unversioned-command --nodocs --setopt install_weak_deps=0'
 

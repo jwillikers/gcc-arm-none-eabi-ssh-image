@@ -1,4 +1,4 @@
-= GCC arm-none-eabi SSH Image
+= GNU Arm Embedded SSH Image
 Jordan Williams <jordan@jwillikers.com>
 :experimental:
 :icons: font
@@ -13,15 +13,15 @@ endif::[]
 :CLion: https://www.jetbrains.com/clion/[CLion]
 :Fedora: https://getfedora.org/[Fedora]
 :Fedora-Silverblue: https://silverblue.fedoraproject.org/[Fedora Silverblue]
-:GCC: https://gcc-arm-none-eabi.gnu.org/[GCC]
-:GNU-ARM-Embedded-Toolchain: https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads[GNU ARM Embedded Toolchain]
+:GCC: https://gnu-arm-embedded.gnu.org/[GCC]
+:GNU-Arm-Embedded-Toolchain: https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads[GNU Arm Embedded Toolchain]
 :OpenSSH: https://www.openssh.com/[OpenSSH]
 :Podman: https://podman.io/[Podman]
 :Visual-Studio-Code: https://code.visualstudio.com/[Visual Studio Code]
 
-image:https://img.shields.io/github/workflow/status/jwillikers/gcc-arm-none-eabi-ssh-image/CI/main[GitHub Workflow Status]
+image:https://img.shields.io/github/workflow/status/jwillikers/gnu-arm-embedded-ssh-image/CI/main[GitHub Workflow Status]
 
-A container image for running the {GNU-ARM-Embedded-Toolchain} toolchain from an {OpenSSH} server, built on {Fedora}.
+A container image for running the {GNU-Arm-Embedded-Toolchain} toolchain from an {OpenSSH} server, built on {Fedora}.
 Comes complete with CMake, Conan, Ninja, and Clang tools.
 
 == Synopsis
@@ -35,11 +35,11 @@ Password:: password
 
 == Quick Start
 
-To use the ARM embedded toolchain inside the container, execute commands via {Podman}.
+To use the GNU Arm Embedded Toolchain inside the container, execute commands via {Podman}.
 
 [source,sh]
 ----
-➜ podman run --rm -p 2222:22 --volume "$HOME":/home/user:Z -dt --name gcc-arm-none-eabi-ssh quay.io/jwillikers/gcc-arm-none-eabi-ssh
+➜ podman run --rm -p 2222:22 --volume "$HOME":/home/user:Z -dt --name gnu-arm-embedded-ssh quay.io/jwillikers/gnu-arm-embedded-ssh
 ----
 
 == Build
@@ -57,14 +57,14 @@ Use {Buildah} to build the image.
 +
 [source,sh]
 ----
-➜ git -C ~/Projects clone git@github.com:jwillikers/gcc-arm-none-eabi-ssh-image.git
+➜ git -C ~/Projects clone git@github.com:jwillikers/gnu-arm-embedded-ssh-image.git
 ----
 
 . Run the shell script.
 +
 [source,sh]
 ----
-➜ ~/Projects/gcc-arm-none-eabi-ssh-image/gcc-arm-none-eabi-ssh-image.sh
+➜ ~/Projects/gnu-arm-embedded-ssh-image/gnu-arm-embedded-ssh-image.sh
 ----
 
 == Learn More
