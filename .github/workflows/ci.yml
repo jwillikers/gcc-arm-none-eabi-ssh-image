@@ -6,8 +6,8 @@ on:
     branches:
       - main
   schedule:
-    # Run at 06:10 on Sunday
-    - cron: "10 6 * * 0"
+    # Run at 04:10 on Sunday
+    - cron: "10 4 * * 0"
 
 jobs:
   build:
@@ -16,24 +16,30 @@ jobs:
     strategy:
       matrix:
         arch:
-          - armhfp
-          - arm64
           - amd64
+          - arm64
+          - arm
     steps:
+      - name: Install the fish shell
+        uses: fish-actions/install-fish@v1.1.0
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
+
+      - name: Configure Podman and Buildah to use FUSE
+        run: |
+          sudo apt-get install fuse-overlayfs
+          mkdir -vp ~/.config/containers
+          printf '[storage]\ndriver="overlay"\n\n[storage.options]\nmount_program="/usr/bin/fuse-overlayfs"\n' > ~/.config/containers/storage.conf
 
       - name: Check out the repository
         uses: actions/checkout@v2
 
       - name: Build the image with Buildah
-        run: ./gnu-arm-embedded-ssh-image.sh -a ${{ matrix.arch }}
-
-      - name: Tag the image for Fedora 34
-        run: podman tag localhost/gnu-arm-embedded-ssh localhost/gnu-arm-embedded-ssh:34
+        run: buildah unshare ./build.fish --architecture ${{ matrix.arch }} --name gnu-arm-embedded-ssh-${{ matrix.arch }}
 
       - name: Export the image
-        run: podman image save --format oci-archive -o gnu-arm-embedded-ssh-${{ matrix.arch }}.tar localhost/gnu-arm-embedded-ssh
+        run: podman image save --format oci-archive -o gnu-arm-embedded-ssh-${{ matrix.arch }}.tar localhost/gnu-arm-embedded-ssh-${{ matrix.arch }}
 
       - uses: actions/upload-artifact@v2
         with:
@@ -47,13 +53,19 @@ jobs:
     strategy:
       matrix:
         arch:
-          - armhfp
-          - arm64
           - amd64
+          - arm64
+          - arm
     steps:
+      - name: Install the fish shell
+        uses: fish-actions/install-fish@v1.1.0
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
-      
+
+      - name: Check out the repository
+        uses: actions/checkout@v2
+
       - uses: actions/download-artifact@v2
         with:
           name: gnu-arm-embedded-ssh-${{ matrix.arch }}
@@ -61,8 +73,8 @@ jobs:
       - name: Load the image
         run: podman image load -i gnu-arm-embedded-ssh-${{ matrix.arch }}.tar
 
-      - name: Run the image and verify the GNU ARM embedded toolchain is available inside the container
-        run: podman run --rm --volume "$PWD":/home/user:Z --name test-container -d localhost/gnu-arm-embedded-ssh arm-none-eabi-g++ test/main.cpp
+      - name: Test the container
+        run: ./test.fish --name gnu-arm-embedded-ssh-${{ matrix.arch }}
 
   publish:
     name: Publish
@@ -71,40 +83,40 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Create a manifest
-        run: buildah manifest create gnu-arm-embedded-ssh-multiarch:latest
+        run: buildah manifest create gnu-arm-embedded-ssh:latest
 
       # armhfp
       - uses: actions/download-artifact@v2
         with:
-          name: gnu-arm-embedded-ssh-armhfp
+          name: gnu-arm-embedded-ssh-arm
 
       - name: Load the armhfp image
-        run: podman image load -i gnu-arm-embedded-ssh-armhfp.tar
+        run: podman image load -i gnu-arm-embedded-ssh-arm.tar
 
       - name: Add the armhfp image to the manifest
-        run: buildah manifest add gnu-arm-embedded-ssh-multiarch:latest localhost/gnu-arm-embedded-ssh
+        run: buildah manifest add gnu-arm-embedded-ssh:latest localhost/gnu-arm-embedded-ssh-arm
 
       # aarch64
       - uses: actions/download-artifact@v2
         with:
           name: gnu-arm-embedded-ssh-arm64
 
-      - name: Load the arm64 image
+      - name: Load the aarch64 image
         run: podman image load -i gnu-arm-embedded-ssh-arm64.tar
 
-      - name: Add the arm64 image to the manifest
-        run: buildah manifest add gnu-arm-embedded-ssh-multiarch:latest localhost/gnu-arm-embedded-ssh
+      - name: Add the aarch64 image to the manifest
+        run: buildah manifest add gnu-arm-embedded-ssh:latest localhost/gnu-arm-embedded-ssh-arm64
 
       # x86_64
       - uses: actions/download-artifact@v2
         with:
           name: gnu-arm-embedded-ssh-amd64
 
-      - name: Load the amd64 image
+      - name: Load the x86_64 image
         run: podman image load -i gnu-arm-embedded-ssh-amd64.tar
 
-      - name: Add the amd64 image to the manifest
-        run: buildah manifest add gnu-arm-embedded-ssh-multiarch:latest localhost/gnu-arm-embedded-ssh
+      - name: Add the x86_64 image to the manifest
+        run: buildah manifest add gnu-arm-embedded-ssh:latest localhost/gnu-arm-embedded-ssh-amd64
 
       - name: Push latest manifest and images to quay.io
-        run: buildah manifest push --rm --all --creds jwillikers+publisher:${{ secrets.REGISTRY_PASSWORD }} gnu-arm-embedded-ssh-multiarch:latest docker://quay.io/jwillikers/gnu-arm-embedded-ssh
+        run: buildah manifest push --rm --all --creds jwillikers+publisher:${{ secrets.REGISTRY_PASSWORD }} gnu-arm-embedded-ssh:latest docker://quay.io/jwillikers/gnu-arm-embedded-ssh
