@@ -72,7 +72,7 @@ podman run \
   -p 2222:22 \
   --security-opt label=disable \
   --device /dev/ttyBmpGdb:/dev/ttyBmpGdb \
-  --volume "$PWD":/home/user:Z \
+  --volume "$PWD":/home/user/project:Z \
   --name gnu-arm-embedded-ssh \
   -dt quay.io/jwillikers/gnu-arm-embedded-ssh:latest
 ----
