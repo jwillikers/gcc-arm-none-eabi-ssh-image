@@ -1,6 +1,7 @@
 #!/usr/bin/env fish
 
 set -l options (fish_opt --short a --long architecture --required-val)
+set -a options (fish_opt --short f --long from --required-val)
 set -a options (fish_opt --short m --long manifest --required-val)
 set -a options (fish_opt --short n --long name --required-val)
 set -a options (fish_opt --short h --long help)
@@ -9,7 +10,7 @@ argparse --max-args 0 $options -- $argv
 or exit
 
 if set -q _flag_help
-    echo "build.fish [-a|--architecture] [-h|--help] [-m|--manifest] [-n|--name]"
+    echo "build.fish [-a|--architecture] [-f|--from] [-h|--help] [-m|--manifest] [-n|--name]"
     exit 0
 end
 
@@ -18,6 +19,12 @@ if set -q _flag_architecture
     set architecture $_flag_architecture
 end
 echo "The image will be built for the $architecture architecture."
+
+set -l from quay.io/jwillikers/openssh-server:latest
+if set -q _flag_from
+    set from $_flag_from
+end
+echo "The image will be built from the $from image."
 
 if set -q _flag_manifest
     set -l manifest $_flag_manifest
@@ -29,7 +36,7 @@ if set -q _flag_name
     set name $_flag_name
 end
 
-set -l container (buildah from --arch $architecture quay.io/jwillikers/openssh-server:latest)
+set -l container (buildah from --arch $architecture $from)
 set -l mountpoint (buildah mount $container)
 
 podman run --rm --arch $architecture --volume $mountpoint:/mnt:Z registry.fedoraproject.org/fedora:latest \
